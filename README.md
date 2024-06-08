@@ -8,7 +8,7 @@ This repository provides a Docker Compose setup for running a PostGIS database p
 ## Getting Started
 1. **Clone the Repository**
     ```
-    git clone https://github.com/yourusername/taiwan-osm-postgis.git
+    git clone https://github.com/iamsad5566/taiwan-osm-postgis.git
     cd taiwan-osm-postgis
 
     ```
