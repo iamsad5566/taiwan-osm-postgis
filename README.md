@@ -10,7 +10,6 @@ This repository provides a Docker Compose setup for running a PostGIS database p
     ```
     git clone https://github.com/iamsad5566/taiwan-osm-postgis.git
     cd taiwan-osm-postgis
-
     ```
 2. **Create a `.env` File**  
     Create a `.env` file in the root directory of the project with the following content:
