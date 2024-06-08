@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgis:
+    image: postgis/postgis:latest
+    container_name: postgis
+    env_file:
+      - .env
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./init_postgis:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    
+  osm2pgsql:
+    build:
+      context: .
+    container_name: osm2pgsql
+    depends_on:
+      postgis:
+        condition: service_healthy
+    volumes:
+      - osm2pgsql_data:/osmdata
+    env_file:
+      - .env
+    entrypoint: ["sh", "-c", "wget -q -O /osmdata/taiwan-latest.osm.pbf http://download.geofabrik.de/asia/taiwan-latest.osm.pbf && PGPASSWORD=${PGPASSWORD} osm2pgsql -H postgis -U ${POSTGRES_USER} -d ${POSTGRES_DB} --password $PGPASSWORD --create --slim -G --hstore -C 3000 --number-processes 4 /osmdata/taiwan-latest.osm.pbf"]
+
+  init-postgis:
+    image: postgis/postgis:14-3.2
+    container_name: init-postgis
+    depends_on:
+      - postgis
+      - osm2pgsql
+    env_file:
+      - .env
+    entrypoint: ["sh", "-c", "PGPASSWORD=${PGPASSWORD} psql -h postgis -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /docker-entrypoint-initdb.d/init.sql"]
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgis_data:
+  osm2pgsql_data:
